@@ -38,9 +38,10 @@ def apply_lambda(
 
     @returns: the list of augmented text documents
     """
-    assert callable(aug_function), (
-        repr(type(aug_function).__name__) + " object is not callable"
-    )
+    assert callable(
+        aug_function
+    ), f"{repr(type(aug_function).__name__)} object is not callable"
+
 
     func_kwargs = deepcopy(locals())
     if aug_function is not None:

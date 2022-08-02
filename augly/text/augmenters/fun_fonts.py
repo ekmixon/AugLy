@@ -26,11 +26,12 @@ class FunFontsAugmenter(Augmenter):
         fonts_path: str,
         priority_words: Optional[List[str]],
     ):
-        assert granularity in [
+        assert granularity in {
             "char",
             "word",
             "all",
-        ], "Granularity must be either char, word, or all"
+        }, "Granularity must be either char, word, or all"
+
         assert (
             0 <= aug_min <= aug_max
         ), "aug_min must be non-negative and aug_max must be greater than or equal to aug_min"
@@ -70,10 +71,7 @@ class FunFontsAugmenter(Augmenter):
 
     @classmethod
     def clean(cls, data: Union[List[str], str]) -> Union[str, List[str]]:
-        if isinstance(data, list):
-            return [d.strip() for d in data]
-
-        return data.strip()
+        return [d.strip() for d in data] if isinstance(data, list) else data.strip()
 
     @classmethod
     def is_duplicate(cls, dataset: List[str], data: str) -> bool:
@@ -131,19 +129,19 @@ class FunFontsAugmenter(Augmenter):
                 for char in chars:
                     if self.vary_fonts:
                         font = random.sample(self.fonts, 1)[0]
-                    if char_idx not in aug_char_idxes:
-                        result += char
-                    else:
-                        result += self.apply_font(char, font, Method.CHAR)
+                    result += (
+                        char
+                        if char_idx not in aug_char_idxes
+                        else self.apply_font(char, font, Method.CHAR)
+                    )
+
                     char_idx += 1
 
                 results.append(result)
 
+        elif random.random() < self.aug_p:
+            results.extend(self.apply_font(token, font, Method.WORD) for token in tokens)
         else:
-            if random.random() < self.aug_p:
-                for token in tokens:
-                    results.append(self.apply_font(token, font, Method.WORD))
-            else:
-                results = tokens
+            results = tokens
 
         return detokenize(results)

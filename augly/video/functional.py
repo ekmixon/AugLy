@@ -80,9 +80,10 @@ def apply_lambda(
 
     @returns: the path to the augmented video
     """
-    assert callable(aug_function), (
-        repr(type(aug_function).__name__) + " object is not callable"
-    )
+    assert callable(
+        aug_function
+    ), f"{repr(type(aug_function).__name__)} object is not callable"
+
 
     func_kwargs = helpers.get_func_kwargs(
         metadata, locals(), video_path, aug_function=aug_function.__name__

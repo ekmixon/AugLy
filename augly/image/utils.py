@@ -237,8 +237,13 @@ def compute_transform_coeffs(
     """
     matrix = []
     for sc, dc in zip(src_coords, dst_coords):
-        matrix.append([dc[0], dc[1], 1, 0, 0, 0, -sc[0] * dc[0], -sc[0] * dc[1]])
-        matrix.append([0, 0, 0, dc[0], dc[1], 1, -sc[1] * dc[0], -sc[1] * dc[1]])
+        matrix.extend(
+            (
+                [dc[0], dc[1], 1, 0, 0, 0, -sc[0] * dc[0], -sc[0] * dc[1]],
+                [0, 0, 0, dc[0], dc[1], 1, -sc[1] * dc[0], -sc[1] * dc[1]],
+            )
+        )
+
     A = np.matrix(matrix, dtype=np.float)
     B = np.array(src_coords).reshape(8)
     res = np.dot(np.linalg.inv(A.T * A) * A.T, B)
@@ -263,7 +268,7 @@ def compute_stripe_mask(
     x_coord_range = np.arange(0, src_w) - src_w / 2
     x_grid_coords, y_grid_coords = np.meshgrid(x_coord_range, y_coord_range)
 
-    if abs(line_angle) == math.pi / 2 or abs(line_angle) == 3 * math.pi / 2:
+    if abs(line_angle) in [math.pi / 2, 3 * math.pi / 2]:
         # Compute mask for vertical stripes
         softmax_mask = (np.cos(2 * math.pi * x_period * x_grid_coords) + 1) / 2
     elif line_angle == 0 or abs(line_angle) == math.pi:
@@ -276,6 +281,4 @@ def compute_stripe_mask(
             + 1
         ) / 2
 
-    binary_mask = softmax_mask > (math.cos(math.pi * line_width) + 1) / 2
-
-    return binary_mask
+    return softmax_mask > (math.cos(math.pi * line_width) + 1) / 2

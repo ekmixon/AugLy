@@ -82,10 +82,7 @@ class InsertionAugmenter(object):
 
     def insert_chars_per_word(self, text: str) -> str:
         words, spaces = split_words_on_whitespace(text)
-        augmented_words = []
-
-        for word in words:
-            augmented_words.append(self.insert_chars(word))
+        augmented_words = [self.insert_chars(word) for word in words]
 
         return rejoin_words_and_whitespace(augmented_words, spaces)
 

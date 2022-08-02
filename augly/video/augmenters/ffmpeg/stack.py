@@ -17,10 +17,11 @@ class VideoAugmenterByStack(BaseFFMPEGAugmenter):
         assert (
             type(use_second_audio) == bool
         ), "Expected a boolean value for use_second_audio"
-        assert orientation in [
+        assert orientation in {
             "hstack",
             "vstack",
-        ], "Expected orientation to be either 'hstack' or 'vstack'"
+        }, "Expected orientation to be either 'hstack' or 'vstack'"
+
 
         self.second_video_path = pathmgr.get_local_path(second_video_path)
         self.use_second_audio = use_second_audio

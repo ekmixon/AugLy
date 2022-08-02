@@ -22,13 +22,12 @@ def get_func_kwargs(
         return {}
     func_kwargs = deepcopy(local_kwargs)
     func_kwargs.pop("metadata")
-    func_kwargs.update(
-        {
-            "src_video_info": helpers.get_video_info(video_path),
-            "src_fps": helpers.get_video_fps(video_path),
-            **kwargs,
-        }
-    )
+    func_kwargs |= {
+        "src_video_info": helpers.get_video_info(video_path),
+        "src_fps": helpers.get_video_fps(video_path),
+        **kwargs,
+    }
+
     return func_kwargs
 
 
@@ -136,23 +135,7 @@ def compute_changed_segments(
     """
     new_src_segments, new_dst_segments = [], []
     for src_segment, dst_segment in zip(src_segments, dst_segments):
-        if name == "insert_in_background":
-            # Note: When we implement insert_in_background, make sure to pass these kwargs
-            offset = kwargs["offset_factor"] * kwargs["background_video_duration"]
-            # The matching segments are just offset in the dst audio by the amount
-            # of background video inserted before the src video.
-            new_src_segments.append(src_segment)
-            new_dst_segments.append(
-                Segment(dst_segment.start + offset, dst_segment.end + offset)
-            )
-        elif name == "replace_with_background":
-            new_src_segments.append(src_segment)
-            clip_start = kwargs["starting_background_duration"]
-            duration = kwargs["source_duration"]
-            new_dst_segments.append(
-                Segment(dst_segment.start + clip_start, dst_segment.start + clip_start + duration)
-            )
-        elif name == "change_video_speed":
+        if name == "change_video_speed":
             # speed_factor > 1 if speedup, < 1 if slow down
             speed_factor *= src_duration / dst_duration
             new_src_segments.append(src_segment)
@@ -173,6 +156,15 @@ def compute_changed_segments(
                     dst_segment.end + offset,
                 )
             )
+        elif name == "insert_in_background":
+            # Note: When we implement insert_in_background, make sure to pass these kwargs
+            offset = kwargs["offset_factor"] * kwargs["background_video_duration"]
+            # The matching segments are just offset in the dst audio by the amount
+            # of background video inserted before the src video.
+            new_src_segments.append(src_segment)
+            new_dst_segments.append(
+                Segment(dst_segment.start + offset, dst_segment.end + offset)
+            )
         elif name == "loop":
             # The existing segments are unchanged.
             new_src_segments.append(src_segment)
@@ -187,6 +179,37 @@ def compute_changed_segments(
                         dst_segment.end + (l_idx + 1) * src_duration,
                     )
                 )
+        elif name == "replace_with_background":
+            new_src_segments.append(src_segment)
+            clip_start = kwargs["starting_background_duration"]
+            duration = kwargs["source_duration"]
+            new_dst_segments.append(
+                Segment(dst_segment.start + clip_start, dst_segment.start + clip_start + duration)
+            )
+        elif name == "replace_with_color_frames":
+            # This transform is like the inverse of time_crop/trim, because
+            # offset & duration denote where the src content is being cropped
+            # out, instead of which src content is being kept.
+            offset = kwargs["offset_factor"] * src_duration
+            duration = kwargs["duration_factor"] * src_duration
+            compute_time_crop_segments(
+                src_segment,
+                dst_segment,
+                speed_factor,
+                0.0,
+                offset,
+                new_src_segments,
+                new_dst_segments,
+            )
+            compute_time_crop_segments(
+                src_segment,
+                dst_segment,
+                speed_factor,
+                offset + duration,
+                dst_duration,
+                new_src_segments,
+                new_dst_segments,
+            )
         elif name == "time_crop":
             crop_start = kwargs["offset_factor"] * src_duration
             crop_end = crop_start + kwargs["duration_factor"] * src_duration
@@ -221,30 +244,6 @@ def compute_changed_segments(
                 new_src_segments,
                 new_dst_segments,
             )
-        elif name == "replace_with_color_frames":
-            # This transform is like the inverse of time_crop/trim, because
-            # offset & duration denote where the src content is being cropped
-            # out, instead of which src content is being kept.
-            offset = kwargs["offset_factor"] * src_duration
-            duration = kwargs["duration_factor"] * src_duration
-            compute_time_crop_segments(
-                src_segment,
-                dst_segment,
-                speed_factor,
-                0.0,
-                offset,
-                new_src_segments,
-                new_dst_segments,
-            )
-            compute_time_crop_segments(
-                src_segment,
-                dst_segment,
-                speed_factor,
-                offset + duration,
-                dst_duration,
-                new_src_segments,
-                new_dst_segments,
-            )
     return new_src_segments, new_dst_segments
 
 
@@ -276,7 +275,7 @@ def compute_segments(
             if meta["name"] in ["change_video_speed"]:
                 speed_factor *= meta["factor"]
 
-    if name in [
+    if name in {
         "insert_in_background",
         "replace_with_background",
         "change_video_speed",
@@ -286,7 +285,7 @@ def compute_segments(
         "trim",
         "replace_with_color_frames",
         "concat",
-    ]:
+    }:
         return compute_changed_segments(
             name,
             src_segments,

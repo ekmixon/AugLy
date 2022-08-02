@@ -121,8 +121,7 @@ class TypoAugmenter(WordAugmenter):
                 results.append(token)
                 continue
 
-            misspellings = self.model.replace(token)
-            if misspellings:
+            if misspellings := self.model.replace(token):
                 misspelling = self.sample(misspellings, 1)[0]
                 results.append(self.align_capitalization(token, misspelling))
             else:

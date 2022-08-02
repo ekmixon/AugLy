@@ -25,8 +25,7 @@ class BaseAugConfig:
 
     def get_output_path(self, filename: str, prefix: str = "") -> str:
         aug_filename = f"aug_{prefix}{filename}"
-        output_path = os.path.join(self.output_dir, aug_filename)
-        return output_path
+        return os.path.join(self.output_dir, aug_filename)
 
 
 @dataclass

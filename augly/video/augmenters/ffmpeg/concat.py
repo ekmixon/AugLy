@@ -13,7 +13,7 @@ from ffmpeg.nodes import FilterableStream
 
 class VideoAugmenterByConcat(BaseFFMPEGAugmenter):
     def __init__(self, video_paths: List[str], src_video_path_index: int):
-        assert len(video_paths) > 0, "Please provide at least one input video"
+        assert video_paths, "Please provide at least one input video"
         assert all(
             pathmgr.exists(video_path) for video_path in video_paths
         ), "Invalid video path(s) provided"

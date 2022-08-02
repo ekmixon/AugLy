@@ -135,12 +135,8 @@ class BaseCV2Augmenter(ABC):
                 utils.validate_rgb_color(color)
 
         while True:
-            if colors:
-                color = colors[random.randint(0, len(colors) - 1)]
-            else:
-                color = (
-                    random.randint(0, 255),  # R
-                    random.randint(0, 255),  # G
-                    random.randint(0, 255),  # B
-                )
-            yield color
+            yield colors[random.randint(0, len(colors) - 1)] if colors else (
+                random.randint(0, 255),
+                random.randint(0, 255),
+                random.randint(0, 255),
+            )

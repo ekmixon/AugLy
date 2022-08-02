@@ -147,9 +147,10 @@ def apply_lambda(
 
     @returns: the augmented audio array and sample rate
     """
-    assert callable(aug_function), (
-        repr(type(aug_function).__name__) + " object is not callable"
-    )
+    assert callable(
+        aug_function
+    ), f"{repr(type(aug_function).__name__)} object is not callable"
+
 
     audio, sample_rate = audutils.validate_and_load_audio(audio, sample_rate)
     aug_audio, out_sample_rate = aug_function(audio, sample_rate, **kwargs)

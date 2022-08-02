@@ -199,9 +199,10 @@ class ApplyLambda(BaseTransform):
         @param **kwargs: the input attributes to be passed into `aug_function`
         """
         super().__init__(p)
-        assert callable(aug_function), (
-            repr(type(aug_function).__name__) + " object is not callable"
-        )
+        assert callable(
+            aug_function
+        ), f"{repr(type(aug_function).__name__)} object is not callable"
+
         self.aug_function = aug_function
         self.kwargs = kwargs
 

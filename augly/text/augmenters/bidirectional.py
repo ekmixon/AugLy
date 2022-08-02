@@ -22,10 +22,11 @@ class BidirectionalAugmenter(object):
     """
 
     def __init__(self, granularity: str, split_word: bool = False):
-        assert granularity in [
+        assert granularity in {
             "word",
             "all",
-        ], "Must set 'granularity' to either 'word' or 'all'."
+        }, "Must set 'granularity' to either 'word' or 'all'."
+
 
         self.granularity = granularity
         self.split_word = split_word
@@ -44,10 +45,7 @@ class BidirectionalAugmenter(object):
 
     def rtl_flip_per_word(self, text: str) -> str:
         words, spaces = split_words_on_whitespace(text)
-        augmented_words = []
-
-        for word in words:
-            augmented_words.append(self.rtl_flip(word, self.split_word))
+        augmented_words = [self.rtl_flip(word, self.split_word) for word in words]
 
         return LTR_OVERRIDE + rejoin_words_and_whitespace(augmented_words, spaces)
 

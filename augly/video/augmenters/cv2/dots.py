@@ -17,10 +17,11 @@ class VideoDistractorByDots(BaseCV2Augmenter):
         self, num_dots: int, dot_type: str, random_movement: bool = True, **kwargs
     ) -> None:
         assert num_dots > 0, "Number of dots must be greater than zero"
-        assert dot_type in [
+        assert dot_type in {
             "colored",
             "blur",
-        ], "Dot type must be set to None or to 'colored' or 'blur'"
+        }, "Dot type must be set to None or to 'colored' or 'blur'"
+
 
         super().__init__(num_dots, random_movement, **kwargs)
 

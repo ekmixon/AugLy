@@ -42,9 +42,10 @@ def apply_lambda(
 
     @returns: the augmented PIL Image
     """
-    assert callable(aug_function), (
-        repr(type(aug_function).__name__) + " object is not callable"
-    )
+    assert callable(
+        aug_function
+    ), f"{repr(type(aug_function).__name__)} object is not callable"
+
     image = imutils.validate_and_load_image(image)
 
     func_kwargs = deepcopy(locals())
@@ -588,10 +589,11 @@ def grayscale(
 
     @returns: the augmented PIL Image
     """
-    assert mode in [
+    assert mode in {
         "luminosity",
         "average",
-    ], "Greyscale mode not supported -- choose either 'luminosity' or 'average'"
+    }, "Greyscale mode not supported -- choose either 'luminosity' or 'average'"
+
 
     image = imutils.validate_and_load_image(image)
 
@@ -1322,7 +1324,7 @@ def overlay_text(
     font_size = int(min(width, height) * font_size)
     font = ImageFont.truetype(local_font_path, font_size)
 
-    pkl_file = os.path.splitext(font_file)[0] + ".pkl"
+    pkl_file = f"{os.path.splitext(font_file)[0]}.pkl"
     local_pkl_path = utils.pathmgr.get_local_path(pkl_file)
 
     with open(local_pkl_path, "rb") as f:
@@ -1651,11 +1653,7 @@ def random_noise(
     np_image = np.asarray(image).astype(np.float32)
     np_image = np_image / 255.0
 
-    if np_image.min() < 0:
-        low_clip = -1.0
-    else:
-        low_clip = 0.0
-
+    low_clip = -1.0 if np_image.min() < 0 else 0.0
     sigma = var ** 0.5
     gauss = np.random.normal(mean, sigma, (np_image.shape))
     noisy_image = np_image + gauss

@@ -97,12 +97,10 @@ def get_video_fps(video_path: str) -> Optional[float]:
 
     try:
         frame_rate = video_info["avg_frame_rate"]
-        # ffmpeg often returns fractional framerates, e.g. 225480/7523
-        if "/" in frame_rate:
-            num, denom = (float(f) for f in frame_rate.split("/"))
-            return num / denom
-        else:
+        if "/" not in frame_rate:
             return float(frame_rate)
+        num, denom = (float(f) for f in frame_rate.split("/"))
+        return num / denom
     except Exception:
         return None
 
@@ -133,10 +131,7 @@ def get_video_info(video_path: str) -> Dict[str, Any]:
 
 def has_audio_stream(video_path: str) -> bool:
     streams = ffmpeg.probe(video_path, cmd=FFPROBE_PATH)["streams"]
-    for stream in streams:
-        if stream["codec_type"] == "audio":
-            return True
-    return False
+    return any(stream["codec_type"] == "audio" for stream in streams)
 
 
 def add_silent_audio(

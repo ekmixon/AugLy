@@ -157,8 +157,9 @@ TOKENIZER_REGEXPS = (
 )
 
 TOKENIZER_REGEX = regex.compile(
-    r"""(%s)""" % "|".join(TOKENIZER_REGEXPS), regex.VERBOSE | regex.UNICODE
+    f"""({"|".join(TOKENIZER_REGEXPS)})""", regex.VERBOSE | regex.UNICODE
 )
+
 
 UPSIDE_DOWN_CHAR_MAPPING = dict(
     zip(
@@ -174,7 +175,7 @@ def tokenize(text: str) -> List[str]:
 
 def detokenize(tokens: List[str]) -> str:
     text = " ".join(tokens)
-    text = " " + text + " "
+    text = f" {text} "
 
     for regexp, substitution in PARENS_BRACKETS:
         text = regexp.sub(substitution, text)
@@ -236,16 +237,19 @@ def get_aug_idxes(
 
     if mode == Method.WORD and priority_words is not None:
         priority_words_set = set(priority_words)
-        for i, token in enumerate(tokens):
-            if token in priority_words_set:
-                if min_char is None or len(token) >= min_char:
-                    priority_idxes.append(i)
+        priority_idxes.extend(
+            i
+            for i, token in enumerate(tokens)
+            if token in priority_words_set
+            and (min_char is None or len(token) >= min_char)
+        )
 
-    idxes = []
-    for i in filtered_idxes:
-        if i not in priority_idxes:
-            if min_char is None or len(tokens[i]) >= min_char:
-                idxes.append(i)
+    idxes = [
+        i
+        for i in filtered_idxes
+        if i not in priority_idxes
+        and (min_char is None or len(tokens[i]) >= min_char)
+    ]
 
     if len(priority_idxes) + len(idxes) == 0:
         return []

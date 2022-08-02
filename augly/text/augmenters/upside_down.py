@@ -17,21 +17,19 @@ from nlpaug.util import Action, Method  # @manual
 
 
 def _flip(c: str) -> str:
-    if c in UPSIDE_DOWN_CHAR_MAPPING:
-        return UPSIDE_DOWN_CHAR_MAPPING[c]
-    else:
-        return c
+    return UPSIDE_DOWN_CHAR_MAPPING[c] if c in UPSIDE_DOWN_CHAR_MAPPING else c
 
 
 class UpsideDownAugmenter(Augmenter):
     """Augmenter that flips the text"""
 
     def __init__(self, granularity: str, aug_min: int, aug_max: int, aug_p: float):
-        assert granularity in [
+        assert granularity in {
             "char",
             "word",
             "all",
-        ], "Granularity must be either char, word, or all"
+        }, "Granularity must be either char, word, or all"
+
         assert (
             0 <= aug_min <= aug_max
         ), "aug_min must be non-negative and aug_max must be greater than or equal to aug_min"
@@ -49,10 +47,7 @@ class UpsideDownAugmenter(Augmenter):
 
     @classmethod
     def clean(cls, data: Union[List[str], str]) -> Union[str, List[str]]:
-        if isinstance(data, list):
-            return [d.strip() for d in data]
-
-        return data.strip()
+        return [d.strip() for d in data] if isinstance(data, list) else data.strip()
 
     @classmethod
     def is_duplicate(cls, dataset: List[str], data: str) -> bool:
@@ -94,10 +89,7 @@ class UpsideDownAugmenter(Augmenter):
                 chars = list(token)
 
                 for char in chars:
-                    if char_idx not in aug_char_idxes:
-                        result += char
-                    else:
-                        result += _flip(char)
+                    result += char if char_idx not in aug_char_idxes else _flip(char)
                     char_idx += 1
 
                 results.append(result)
